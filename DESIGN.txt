@@ -1,0 +1,22 @@
+Game Project Plan
+
+Name: Mamba's Revenge
+Story: Mamba's sister was killed in the jungle by an infamous and merciless beast 
+named Jamal, who is said to live at the very peak of the mountain. He wants to
+avenge his sister's death at all costs.
+
+Genre: 2-D Vertical Scrolling Platformer
+
+Goal: Reach the peak of the mountain and defeat Jamal
+
+Basic Mechanics: Mamba can jump and move left to right with WASD keys. He can also
+can shoot fireballs to damage/kill his enemies. However, if he touches an enemy or is
+hit my an enemy projectile, then the game is over and the player must start over.
+
+Levels: There are two different levels: The Climb and The Confrontation. The Climb
+is Mamba's rise to the top of the mountain, where he moves up between platforms
+while killing his enemies and getting power-ups. The Confrontation occurs
+once the player has accomplished The Climb. This is the boss level where
+the player fights Jamal, who has numerous special abilities, in an inescapable
+arena. In this mode, Mamba can charge up a special attack by hitting Jamal
+with a certain number of normal attacks
