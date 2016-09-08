@@ -3,11 +3,11 @@ package game;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
-public class WoodySprite extends Sprite{
-	
-	public WoodySprite(int xpos, int ypos, int direction){
-		facingRight = new Image(getClass().getClassLoader().getResourceAsStream("woodyFacingRight.png"));
-		facingLeft = new Image(getClass().getClassLoader().getResourceAsStream("woodyFacingLeft.png"));
+public class Fireball extends Sprite{
+
+	public Fireball(double xpos, double ypos, int direction){
+		facingRight = new Image(getClass().getClassLoader().getResourceAsStream("rightProjectile.png"));
+		facingLeft = new Image(getClass().getClassLoader().getResourceAsStream("leftProjectile.png"));
 		sprite = new ImageView(facingRight);
 		if(direction == 1){
 			sprite.setImage(facingLeft);
@@ -19,15 +19,10 @@ public class WoodySprite extends Sprite{
 		setX(xpos);
 		setY(ypos);
 		setDirection(direction);
-		setXVelocity(1);
+		setXVelocity(5);
 	}
 	
 	public void move(){
-		if(getX() >= 350){
-			setDirection(-1);
-		}else if(getX() <= 50){
-			setDirection(1);
-		}
 		setX(getX() + getXVelocity() * getDirection());
 	}
 }

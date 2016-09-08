@@ -3,15 +3,35 @@ package game;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
-public abstract class Character {
+public class Sprite {
 	
-	public ImageView sprite;
-	public Image facingRight;
-	public Image facingLeft;
+	protected ImageView sprite;
+	protected Image facingRight;
+	protected Image facingLeft;
 	
 	private int direction = 1;
-	private double velocityX = 1;
+	private double velocityX = 0;
 	private double velocityY = 0;
+	
+	public Sprite(){
+        this(0,0,1);
+	}
+	
+	public Sprite(double xpos, double ypos, int direction){
+		facingRight = new Image(getClass().getClassLoader().getResourceAsStream("SpriteFacingRight.png"));
+		facingLeft = new Image(getClass().getClassLoader().getResourceAsStream("SpriteFacingLeft.png"));
+		sprite = new ImageView(facingRight);
+		if(direction == 1){
+			sprite.setImage(facingLeft);
+		}else{
+			sprite.setImage(facingRight);
+		}
+		sprite.setFitHeight(40);
+		sprite.setFitWidth(25);
+		setX(xpos);
+		setY(ypos);
+		setDirection(direction);
+	}
 	
 	public ImageView getSprite(){
 		return sprite;
@@ -35,6 +55,11 @@ public abstract class Character {
 	
 	public void setDirection(int direction){
 		this.direction = direction;
+		if(direction == 1){
+			sprite.setImage(facingRight);
+		}else{
+			sprite.setImage(facingLeft);
+		}
 	}
 	public int getDirection(){
 		return direction;
@@ -53,11 +78,6 @@ public abstract class Character {
 	}
 	
 	public void move(){
-		if(getX() >= 350){
-			setDirection(-1);
-		}else if(getX() <= 50){
-			setDirection(1);
-		}
-		setX(getX() + velocityX * getDirection());
+		
 	}
 }
