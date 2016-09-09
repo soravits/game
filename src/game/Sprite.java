@@ -77,7 +77,14 @@ public class Sprite {
 		return velocityY;
 	}
 	
-	public void move(){
-		
+	public void move(){	
+	}
+	
+	public void checkBounds(){
+		if(getX() + sprite.getFitWidth() > 400){
+			setX(0);
+		}else if(getX() < 0){
+			setX(400-sprite.getFitWidth());
+		}
 	}
 }

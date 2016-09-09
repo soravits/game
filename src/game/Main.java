@@ -8,6 +8,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 public class Main extends Application {
+	public static Stage currStage;
 	public static final int WIDTH = 400;
 	public static final int HEIGHT = 550;
 	public static final int FRAMES_PER_SECOND = 60;
@@ -19,10 +20,12 @@ public class Main extends Application {
 	@Override
 	public void start (Stage startStage) throws Exception {
 		// TODO Auto-generated method stub
+		
+		currStage = startStage;
 		Game = new GameFrame();
 		startStage.setTitle(Game.getTitle());
-		Scene scene = Game.init(WIDTH, HEIGHT);
-		startStage.setScene(scene);
+		Scene startScene = Game.init(WIDTH, HEIGHT);
+		startStage.setScene(startScene);
 		startStage.show();
 
 		KeyFrame frame = new KeyFrame(Duration.millis(MILLISECOND_DELAY),

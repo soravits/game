@@ -5,12 +5,17 @@ import java.util.Random;
 
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 
 public class GameFrame {
 	public static final String TITLE = "Mamba's Revenge";
@@ -18,43 +23,22 @@ public class GameFrame {
 	public static final double JUMP_SPEED = 5;
 	public static final double GRAVITY = 2.5;
 
-	private Group root;
-	
 	private Scene gameScene;
+	private Group root;
+	private int level = 1;
+
 	private ArrayList<Rectangle> blocks;
 	private ArrayList<Sprite> enemies;
-	private ArrayList<Sprite> projectiles;
+	private ArrayList<Fireball> projectiles;
 
 	private Sprite mainCharacter;
 	private Image blockImage;
 
 	private double jumpInitialPos = 0;
 	private boolean jumping = false;
-	private long jumpTime;
-	boolean onSurface;
+	private boolean onSurface;
 
-	public Scene init (int width, int height) {
-		blocks = new ArrayList<Rectangle>();
-		enemies = new ArrayList<Sprite>();
-		projectiles= new ArrayList<Sprite>();
-		root = new Group();
-		// create a place to see the shapes
-		gameScene = new Scene(root, width, height, Color.WHITE);
-		blockImage = new Image(getClass().getClassLoader().getResourceAsStream("block.png"));
-		mainCharacter = new Sprite(0,460,1);
-		Rectangle initBlock = new Rectangle(0,500,50,50);
-		initBlock.setFill(new ImagePattern(blockImage));
-		generateBlocks();
-		blocks.add(initBlock);
-		root.getChildren().add(initBlock);
-		spawnWoodySprites();
-		root.getChildren().add(mainCharacter.getSprite());
-		gameScene.setOnKeyPressed(e -> handleKeyPress(e.getCode()));
-		gameScene.setOnKeyReleased(e-> handleKeyRelease(e.getCode()));
-		return gameScene;
-	}
-
-	public void generateBlocks(){
+	private void generateBlocks(){
 		blocks.clear();
 		for(int i = 0; i<7; i++){
 			for(int j = 0; j<3; j++){
@@ -75,7 +59,7 @@ public class GameFrame {
 		}
 	}
 
-	public void spawnWoodySprites(){
+	private void spawnWoodySprites(){
 		for(int i  = 0; i<5; i++){
 			for(int j = 0; j<2; j++){
 				Random rand = new Random();
@@ -92,42 +76,8 @@ public class GameFrame {
 		}
 	}
 
-	public void step (double elapsedTime) {
-		
-		if(mainCharacter.getX() + mainCharacter.getSprite().getFitWidth() > 400){
-			mainCharacter.setX(0);
-		}else if(mainCharacter.getX() < 0){
-			mainCharacter.setX(400-mainCharacter.getSprite().getFitWidth());
-		}
-		
-		for(int i = 0; i<enemies.size(); i++){
-			Sprite enemy = enemies.get(i);
-			enemy.move();
-			for(int j = 0; j < projectiles.size(); j++){
-				Sprite projectile = projectiles.get(j);
-				if(enemy.getSprite().getBoundsInLocal().intersects(projectile.getSprite().getBoundsInLocal())){
-					root.getChildren().remove(projectile.getSprite());
-					root.getChildren().remove(enemy.getSprite());
-					enemies.remove(enemy);
-					projectiles.remove(projectile);
-				}
-			}
-		}
-
-		for(Sprite projectile:projectiles){
-			projectile.move();
-		}
-
-		onSurface = false;
-
-		if(jumping && mainCharacter.getY()>jumpInitialPos-100){
-			mainCharacter.setYVelocity(-JUMP_SPEED);
-		}else{
-			jumping = false;
-			mainCharacter.setYVelocity(0);
-		}
-		mainCharacter.setX(mainCharacter.getX() + mainCharacter.getXVelocity() * mainCharacter.getDirection());
-
+	private void checkPlayerCollisions(){
+		onSurface = false;		
 		for(int i = 0; i<blocks.size(); i++){
 			Rectangle currBlock = blocks.get(i);
 			if(mainCharacter.getSprite().getBoundsInLocal().intersects(currBlock.getBoundsInLocal()) && mainCharacter.getY() + mainCharacter.getSprite().getFitHeight() == currBlock.getY() && mainCharacter.getX() < currBlock.getX() + currBlock.getWidth() && mainCharacter.getX() + mainCharacter.getSprite().getFitWidth() > currBlock.getX()){
@@ -146,10 +96,95 @@ public class GameFrame {
 			}
 		}
 		
+		for(int i = 0; i<enemies.size(); i++){
+			Sprite enemy = enemies.get(i);
+			if(mainCharacter.getSprite().getBoundsInLocal().intersects(enemy.getSprite().getBoundsInLocal())){
+				
+			}
+		}
+	}
+
+	private void checkEnemyCollisions(){
+		for(int i = 0; i<enemies.size(); i++){
+			Sprite enemy = enemies.get(i);
+
+			for(int j = 0; j < projectiles.size(); j++){
+				Sprite projectile = projectiles.get(j);
+				if(enemy.getSprite().getBoundsInLocal().intersects(projectile.getSprite().getBoundsInLocal())){
+					root.getChildren().remove(projectile.getSprite());
+					root.getChildren().remove(enemy.getSprite());
+					enemies.remove(enemy);
+					projectiles.remove(projectile);
+				}
+			}
+		}	
+	}
+
+	public Scene init (int width, int height) {
+		blocks = new ArrayList<Rectangle>();
+		enemies = new ArrayList<Sprite>();
+		projectiles = new ArrayList<Fireball>();
+		root = new Group();
+		gameScene = new Scene(root, width, height, Color.WHITE);
+		blockImage = new Image(getClass().getClassLoader().getResourceAsStream("block.png"));
+		Rectangle initBlock = new Rectangle(0,500,50,50);
+		initBlock.setFill(new ImagePattern(blockImage));
+		generateBlocks();
+		blocks.add(initBlock);
+		root.getChildren().add(initBlock);
+
+		mainCharacter = new Sprite(50,460,1);
+		root.getChildren().add(mainCharacter.getSprite());
+
+		spawnWoodySprites();
+
+		gameScene.setOnKeyPressed(e -> handleKeyPress(e.getCode()));
+		gameScene.setOnKeyReleased(e-> handleKeyRelease(e.getCode()));
+		return gameScene;
+	}
+
+	public void step (double elapsedTime) {
+
+		mainCharacter.checkBounds();
+		if(mainCharacter.getY() < 0 || level == 2){		
+			if(level == 1){
+				level++;
+			}
+			root.getChildren().clear();
+			generateBlocks();
+			root.getChildren().add(mainCharacter.getSprite());
+			mainCharacter.setX(50);
+			mainCharacter.setY(460);
+		}
+
+		for(int i = 0; i < projectiles.size(); i++){
+			Fireball projectile = projectiles.get(i);
+			projectile.move();
+			if(projectile.getX() > projectile.getInitialXPosition() + 100 || projectile.getX() < projectile.getInitialXPosition() - 100 || projectile.getX() > 400 || projectile.getX() < 0){
+				root.getChildren().remove(projectile.getSprite());
+				projectiles.remove(projectile);
+			}
+		}
+
+		for(Sprite enemy:enemies){
+			enemy.move();
+		}
+
+		if(jumping && mainCharacter.getY()>jumpInitialPos-130){
+			mainCharacter.setYVelocity(-JUMP_SPEED);
+		}else{
+			jumping = false;
+			mainCharacter.setYVelocity(0);
+		}
+
+		mainCharacter.setX(mainCharacter.getX() + mainCharacter.getXVelocity() * mainCharacter.getDirection());
+
+		checkPlayerCollisions();
+		checkEnemyCollisions();
 		if(!onSurface && !jumping){
 			mainCharacter.setYVelocity(GRAVITY);
 		}
-		mainCharacter.setY(mainCharacter.getY()+mainCharacter.getYVelocity());
+		mainCharacter.setY(mainCharacter.getY() + mainCharacter.getYVelocity());
 	}
 
 	private void handleKeyPress (KeyCode code) {
@@ -166,11 +201,13 @@ public class GameFrame {
 			mainCharacter.setXVelocity(MOVE_SPEED);
 			break;
 		case SPACE:
-			Fireball fireball = new Fireball(mainCharacter.getX()+10, mainCharacter.getY(), mainCharacter.getDirection());
-			projectiles.add(fireball);
-			root.getChildren().add(fireball.getSprite());
+			if(projectiles.size() == 0){
+				Fireball projectile = new Fireball(mainCharacter.getX()+10, mainCharacter.getY(), mainCharacter.getDirection());
+				projectiles.add(projectile);
+				root.getChildren().add(projectile.getSprite());
+			}
 		default:
-			// do nothing
+			break;
 		}
 	}
 
@@ -178,7 +215,7 @@ public class GameFrame {
 		switch (code) {
 		case W:
 			if(onSurface)
-			jumping = true;
+				jumping = true;
 			break;
 		case A:
 			if(mainCharacter.getDirection() == -1){
@@ -191,7 +228,7 @@ public class GameFrame {
 			}
 			break;
 		default:
-			// do nothing
+			break;
 		}
 	}
 

@@ -4,8 +4,11 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 public class Fireball extends Sprite{
-
+	
+	private double initialXPosition;
+	
 	public Fireball(double xpos, double ypos, int direction){
+		initialXPosition = xpos;
 		facingRight = new Image(getClass().getClassLoader().getResourceAsStream("rightProjectile.png"));
 		facingLeft = new Image(getClass().getClassLoader().getResourceAsStream("leftProjectile.png"));
 		sprite = new ImageView(facingRight);
@@ -19,10 +22,14 @@ public class Fireball extends Sprite{
 		setX(xpos);
 		setY(ypos);
 		setDirection(direction);
-		setXVelocity(5);
+		setXVelocity(10);
 	}
 	
 	public void move(){
 		setX(getX() + getXVelocity() * getDirection());
+	}
+	
+	public double getInitialXPosition(){
+		return initialXPosition;
 	}
 }

@@ -19,7 +19,7 @@ public class WoodySprite extends Sprite{
 		setX(xpos);
 		setY(ypos);
 		setDirection(direction);
-		setXVelocity(1);
+		setXVelocity(2.5);
 	}
 	
 	public void move(){
