@@ -4,26 +4,27 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 public class Sprite {
-	
+
 	protected ImageView sprite;
 	protected Image facingRight;
 	protected Image facingLeft;
-	
+
 	private int direction = 1;
 	private double velocityX = 0;
 	private double velocityY = 0;
-	
+	private int health = 1;
+
 	public Sprite(){
-        this(0,0,1);
+		this(460,0,1);
 	}
-	
-	public Sprite(double xpos, double ypos, int direction){
+
+	public Sprite (double xpos, double ypos, int direction) {
 		facingRight = new Image(getClass().getClassLoader().getResourceAsStream("SpriteFacingRight.png"));
 		facingLeft = new Image(getClass().getClassLoader().getResourceAsStream("SpriteFacingLeft.png"));
 		sprite = new ImageView(facingRight);
-		if(direction == 1){
+		if(direction == 1) {
 			sprite.setImage(facingLeft);
-		}else{
+		} else {
 			sprite.setImage(facingRight);
 		}
 		sprite.setFitHeight(40);
@@ -32,59 +33,97 @@ public class Sprite {
 		setY(ypos);
 		setDirection(direction);
 	}
-	
-	public ImageView getSprite(){
+
+	public ImageView getSprite () {
 		return sprite;
 	}
-	
-	public void setX(double xpos){
+
+	public void setX (double xpos) {
 		sprite.setX(xpos);
 	}
-	
-	public double getX(){
+
+	public double getX () {
 		return sprite.getX();
 	}
-	
-	public void setY(double ypos){
+
+	public void setY (double ypos) {
 		sprite.setY(ypos);
 	}
-	
-	public double getY(){
+
+	public double getY () {
 		return sprite.getY();
 	}
-	
-	public void setDirection(int direction){
+
+	public void setDirection (int direction) {
 		this.direction = direction;
-		if(direction == 1){
+		if(direction == 1) {
 			sprite.setImage(facingRight);
-		}else{
+		} else {
 			sprite.setImage(facingLeft);
 		}
 	}
-	public int getDirection(){
+	public int getDirection () {
 		return direction;
 	};
-	public void setXVelocity(double velX){
+	public void setXVelocity (double velX) {
 		this.velocityX = velX;
 	}
-	public double getXVelocity(){
+	public double getXVelocity () {
 		return velocityX;
 	}
-	public void setYVelocity(double velY){
+	public void setYVelocity (double velY) {
 		this.velocityY = velY;
 	}
-	public double getYVelocity(){
+	public double getYVelocity () {
 		return velocityY;
 	}
-	
-	public void move(){	
+
+	public void checkBounds () {
+		if(getX() + sprite.getFitWidth() > Main.WIDTH) {
+			setX(0);
+		} else if(getX() < 0) {
+			setX(Main.WIDTH - sprite.getFitWidth());
+		}
+	}
+
+	public void setHeight (double height) {
+		sprite.setFitHeight(height);
+	}
+
+	public double getHeight () {
+		return sprite.getFitHeight();
+	}
+
+	public void setWidth (double width) {
+		sprite.setFitWidth(width);
+	}
+
+	public double getWidth () {
+		return sprite.getFitWidth();
+	}
+
+	public void setLeftImage (Image left) {
+		sprite.setImage(left);
+	}
+
+	public void setRightImage (Image right) {
+		sprite.setImage(right);
 	}
 	
-	public void checkBounds(){
-		if(getX() + sprite.getFitWidth() > 400){
-			setX(0);
-		}else if(getX() < 0){
-			setX(400-sprite.getFitWidth());
+	public void move() {
+		setX(getX() + getXVelocity() * getDirection());
+		if(getX() >= Main.WIDTH - getWidth()) {
+			setDirection(-1);
+		} else if(getX() <= 50) {
+			setDirection(1);
 		}
+	}
+	
+	public int getHealth() {
+		return health;
+	}
+
+	public void setHealth (int health) {
+		this.health = health;
 	}
 }

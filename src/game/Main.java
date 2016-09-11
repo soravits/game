@@ -24,7 +24,9 @@ public class Main extends Application {
 		currStage = startStage;
 		Game = new GameFrame();
 		startStage.setTitle(Game.getTitle());
-		Scene startScene = Game.init(WIDTH, HEIGHT);
+		startStage.setResizable(false);
+		startStage.sizeToScene();
+		Scene startScene = Game.initializeSplashScreen(WIDTH, HEIGHT);
 		startStage.setScene(startScene);
 		startStage.show();
 

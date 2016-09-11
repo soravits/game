@@ -6,28 +6,13 @@ import javafx.scene.image.ImageView;
 public class WoodySprite extends Sprite{
 	
 	public WoodySprite(int xpos, int ypos, int direction){
+		super(xpos,ypos,direction);
 		facingRight = new Image(getClass().getClassLoader().getResourceAsStream("woodyFacingRight.png"));
 		facingLeft = new Image(getClass().getClassLoader().getResourceAsStream("woodyFacingLeft.png"));
-		sprite = new ImageView(facingRight);
-		if(direction == 1){
-			sprite.setImage(facingLeft);
-		}else{
-			sprite.setImage(facingRight);
-		}
-		sprite.setFitHeight(30);
-		sprite.setFitWidth(30);
-		setX(xpos);
-		setY(ypos);
-		setDirection(direction);
+		setLeftImage(facingLeft);
+		setRightImage(facingRight);
+		setHeight(30);
+		setWidth(30);
 		setXVelocity(2.5);
-	}
-	
-	public void move(){
-		if(getX() >= 350){
-			setDirection(-1);
-		}else if(getX() <= 50){
-			setDirection(1);
-		}
-		setX(getX() + getXVelocity() * getDirection());
 	}
 }
