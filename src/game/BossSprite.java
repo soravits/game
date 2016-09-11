@@ -18,7 +18,7 @@ public class BossSprite extends Sprite {
 		setRightImage(facingRight);
 		setHeight(100);
 		setWidth(100);
-		setHealth(50);
+		setHealth(30);
 		setXVelocity(1);
 		setYVelocity(1);
 	}

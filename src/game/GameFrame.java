@@ -2,6 +2,9 @@ package game;
 
 import java.util.ArrayList;
 import java.util.Random;
+
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
@@ -13,6 +16,7 @@ import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.util.Duration;
 
 public class GameFrame {
 	public static final String TITLE = "Mamba's Revenge";
@@ -38,6 +42,7 @@ public class GameFrame {
 	private Sprite mainCharacter;
 	private BossSprite boss;
 	private Image blockSprite;
+	private Image explosionSprite;
 
 	private int currLevel = 1;
 
@@ -135,6 +140,21 @@ public class GameFrame {
 			}
 		}
 	}
+	
+	private void createExplosion(double xpos, double ypos){
+		explosionSprite = new Image(getClass().getClassLoader().getResourceAsStream("fire_effect.png"));
+		ImageView explosion = new ImageView(explosionSprite);
+		explosion.setX(xpos);
+		explosion.setY(ypos);
+		explosion.setFitHeight(50);
+		explosion.setFitWidth(50);
+		root.getChildren().add(explosion);
+		KeyFrame frame = new KeyFrame(Duration.millis(Main.MILLISECOND_DELAY * 10),
+				e -> root.getChildren().remove(explosion));
+		Timeline animation = new Timeline();
+		animation.getKeyFrames().add(frame);
+		animation.play();
+	}
 
 	private void checkEnemyCollisions () {
 		for(int i = 0; i<enemies.size(); i++) {
@@ -142,6 +162,11 @@ public class GameFrame {
 			for(int j = 0; j < projectiles.size(); j++) {
 				Sprite projectile = projectiles.get(j);
 				if(enemy.getSprite().getBoundsInLocal().intersects(projectile.getSprite().getBoundsInLocal())) {
+					KeyFrame frame = new KeyFrame(Duration.millis(Main.MILLISECOND_DELAY),
+							e -> createExplosion(enemy.getX() + enemy.getWidth()/2 - 25, enemy.getY() + enemy.getHeight()/2 - 25));
+					Timeline animation = new Timeline();
+					animation.getKeyFrames().add(frame);
+					animation.play();
 					if(enemy.getHealth() > 1) {
 						enemy.setHealth(enemy.getHealth()-1);
 						root.getChildren().remove(projectile.getSprite());
@@ -151,6 +176,7 @@ public class GameFrame {
 							playerWins();
 						}
 						root.getChildren().remove(projectile.getSprite());
+						projectiles.remove(projectile);
 						root.getChildren().remove(enemy.getSprite());
 						enemies.remove(enemy);
 					}
@@ -213,9 +239,9 @@ public class GameFrame {
 
 	public void goNextLevel () {	
 		currLevel++;
-		removeAllSprites();
-		generateBlocks();
 		if(currLevel == 2) {
+			removeAllSprites();
+			generateBlocks();
 			root.getChildren().add(mainCharacter.getSprite());
 			mainCharacter.setX(50);
 			mainCharacter.setY(460);
@@ -226,8 +252,8 @@ public class GameFrame {
 	}
 
 	public void generateBossLevel () {
-		removeAllSprites();
 		currLevel = 3;
+		removeAllSprites();
 		for(int i = 0; i<8; i++){
 			Rectangle bottomBlock = new Rectangle(i*50, 500, BLOCK_WIDTH, BLOCK_HEIGHT);
 			bottomBlock.setFill(new ImagePattern(blockSprite));
@@ -254,7 +280,7 @@ public class GameFrame {
 			}
 		}
 		root.getChildren().add(mainCharacter.getSprite());
-		mainCharacter.setX(50);
+		mainCharacter.setX(0);
 		mainCharacter.setY(460);
 		boss = new BossSprite(100,50,1);
 		root.getChildren().add(boss.getSprite());

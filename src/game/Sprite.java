@@ -112,7 +112,7 @@ public class Sprite {
 	
 	public void move() {
 		setX(getX() + getXVelocity() * getDirection());
-		if(getX() >= Main.WIDTH - getWidth()) {
+		if(getX() >= Main.WIDTH - getWidth() * 1.5) {
 			setDirection(-1);
 		} else if(getX() <= 50) {
 			setDirection(1);
