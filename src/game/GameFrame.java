@@ -19,7 +19,8 @@ import javafx.scene.text.Text;
 import javafx.util.Duration;
 
 /**
- * The code that dictates all of the game's mechanics 
+ * The code that dictates all of the game's internal mechanics, including
+ * levels, player movement, collisions, and controls. 
  * 
  * @author Soravit Sophastienphong, credit to Robert C. Duvall for template code
  */

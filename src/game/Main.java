@@ -8,9 +8,10 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 /**
+ * This class contains the main method and sets up the game's graphics and
+ * constant variables
  * 
  * @author Soravit Sophastienphong, credit to Robert C. Duvall for template code
- *
  */
 public class Main extends Application {
     private static Stage currStage;
@@ -18,14 +19,15 @@ public class Main extends Application {
     public static final int HEIGHT = 550;
     public static final int FRAMES_PER_SECOND = 60;
     public static final int MILLISECOND_DELAY = 1000 / FRAMES_PER_SECOND;
-    private static final double SECOND_DELAY = 1.0 / FRAMES_PER_SECOND;
 
     private GameFrame Game;
 
     /**
      * Sets up the stage, scene, and graphics for the game
      * 
-     * @param The stage that the game is played on
+     * @param startStage The stage that the game is played on
+     * @throws Exception Accounts for numerous types of exceptions
+     * that could crash the game
      */
     @Override
     public void start (Stage startStage) throws Exception {

@@ -4,7 +4,8 @@ import java.util.Random;
 import javafx.scene.image.Image;
 
 /**
- * The dragon sprite that the player fights at the second level
+ * This is the dragon sprite that the player fights at the second level, 
+ * which moves at a randomized speed.
  * 
  * @author Soravit Sophastienphong
  */

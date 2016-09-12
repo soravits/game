@@ -3,7 +3,8 @@ package game;
 import javafx.scene.image.Image;
 
 /**
- * The sprite the player fights at the boss level
+ * This is the sprite that player fights at the boss level. It's different
+ * from a regular sprite in the way it moves.
  * 
  * @author Soravit Sophastienphong
  */

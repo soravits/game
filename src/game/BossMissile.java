@@ -4,7 +4,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
 /**
- * Represents a projectile that targets the player at the boss level
+ * This class represents the projectile that targets the player 
+ * during the boss level.
  * 
  * @author Soravit Sophastienphong
  */
@@ -82,7 +83,7 @@ public class BossMissile extends Circle {
     }
 
     /**
-     * Return an angle that indicates the direction of the
+     * Finds an angle that indicates the direction of the
      * target from the position of the projectile
      */
     public void determineDirection () {

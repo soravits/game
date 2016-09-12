@@ -4,7 +4,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 /**
- * The projectile that the player can shoot to kill/damage enemies
+ * This is the projectile that the player can shoot to kill/damage enemies.
  * 
  * @author Soravit Sophastienphong
  */

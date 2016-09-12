@@ -21,6 +21,9 @@ public class WoodySprite extends Sprite{
         setXVelocity(2.5);
     }
 
+    /**
+     * The sprite moves from side to side but not off the screen.
+     */
     public void move(){
         super.move();
         if(getX() >= Main.WIDTH - getWidth() * 1.5) {
