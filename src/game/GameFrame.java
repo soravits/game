@@ -6,439 +6,467 @@ import java.util.Random;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
-
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
+/**
+ * The code that dictates all of the game's mechanics 
+ * 
+ * @author Soravit Sophastienphong, credit to Robert C. Duvall for template code
+ */
 public class GameFrame {
-	public static final String TITLE = "Mamba's Revenge";
-	public static final double MOVE_SPEED = 5;
-	public static final double JUMP_SPEED = 5;
-	public static final double GRAVITY = 2.5;
-	public static final double BLOCK_WIDTH = 50;
-	public static final double BLOCK_HEIGHT = 50;
-	public static final int PROJECTILE_MOVE_DISTANCE = 150;
+    public static final String TITLE = "Mamba's Revenge";
+    public static final double MOVE_SPEED = 5;
+    public static final double JUMP_SPEED = 5;
+    public static final double GRAVITY = 2.5;
+    public static final double BLOCK_WIDTH = 50;
+    public static final double BLOCK_HEIGHT = 50;
+    public static final double PROJECTILE_MOVE_DISTANCE = 150;
 
-	private Scene gameScene;
-	private Scene splashScene;
-	private Scene finalScene;
+    private Scene gameScene;
+    private Scene splashScene;
+    private Scene finalScene;
 
-	private Group root;
-	private Group messages;
+    private Group root;
+    private Group messages;
 
-	private ArrayList<Rectangle> blocks;
-	private ArrayList<Sprite> enemies;
-	private ArrayList<Fireball> projectiles;
-	private ArrayList<BossMissile> bossMissiles;
+    private ArrayList<Rectangle> blocks;
+    private ArrayList<Sprite> enemies;
+    private ArrayList<Fireball> projectiles;
+    private ArrayList<BossMissile> bossMissiles;
 
-	private Sprite mainCharacter;
-	private BossSprite boss;
-	private Image blockSprite;
-	private Image explosionSprite;
+    private Sprite mainCharacter;
+    private BossSprite boss;
+    private Image blockSprite;
+    private Image explosionSprite;
+    private ImagePattern stonePattern;
 
-	private int currLevel = 1;
+    private int currLevel = 1;
 
-	private double initialJumpingPosition = 0;
-	private boolean jumpingUp = false;
-	private boolean charOnBlock = false;
+    private double initialJumpingPosition = 0;
+    private boolean jumpingUp = false;
+    private boolean charOnBlock = false;
+    private boolean invulnerabilityMode = false;
 
-	private void startGame () {
-		Rectangle initBlock = new Rectangle(0, 500, 50, 50);
-		initBlock.setFill(new ImagePattern(blockSprite));
-		generateBlocks();
-		blocks.add(initBlock);
-		root.getChildren().add(initBlock);
-		mainCharacter = new Sprite(0, 460, 1);
-		root.getChildren().add(mainCharacter.getSprite());
-		spawnEnemies();
-	}
+    /**
+     * Returns the title of the game
+     */
+    public String getTitle() {
+        return TITLE;
+    }
 
-	private void generateBlocks () {
-		ImagePattern stonePattern = new ImagePattern(blockSprite);
-		blocks.clear();
-		for(int i = 0; i<7; i++) {
-			for(int j = 0; j<3; j++) {
-				Rectangle newBlock = new Rectangle(i*50, j*200, BLOCK_WIDTH, BLOCK_HEIGHT);
-				newBlock.setFill(stonePattern);
-				blocks.add(newBlock);
-				root.getChildren().add(newBlock);
-			}
-		}
-		for(int k = 1; k<8; k++) {
-			for(int l = 0; l<4; l++) {
-				Rectangle newBlock = new Rectangle(k*50, l*200-100, BLOCK_WIDTH, BLOCK_HEIGHT);
-				newBlock.setFill(stonePattern);
-				blocks.add(newBlock);
-				root.getChildren().add(newBlock);
-			}
-		}
-	}
+    private void generateBlock(int xpos, int ypos){
+        Rectangle newBlock = new Rectangle(xpos, ypos, BLOCK_WIDTH, BLOCK_HEIGHT);
+        newBlock.setFill(stonePattern);
+        blocks.add(newBlock);
+        addToGameScene(newBlock);
+    }
 
-	private void spawnEnemies () {
-		if(currLevel == 1) {
-			for(int i  = 0; i<5; i++) {
-				for(int j = 0; j<2; j++) {
-					Random rand = new Random();
-					int xPos = rand.nextInt(300);
-					WoodySprite woodySprite = new WoodySprite(xPos + 50, 100*i + 70, 1);
-					if(xPos > Main.WIDTH/2) {
-						woodySprite.setDirection(1);
-					} else {
-						woodySprite.setDirection(-1);
-					}
-					enemies.add(woodySprite);
-					root.getChildren().add(woodySprite.getSprite());
-				}
-			}
-		} else if(currLevel == 2) {
-			for(int k  = 0; k<5; k++) {
-				Random rand = new Random();
-				int xPos = rand.nextInt(300);
-				DragonSprite dragonSprite = new DragonSprite(xPos + 100, 100*k + 50, 1);
-				if(xPos > Main.WIDTH/2){
-					dragonSprite.setDirection(1);
-				}else{
-					dragonSprite.setDirection(-1);
-				}
-				enemies.add(dragonSprite);
-				root.getChildren().add(dragonSprite.getSprite());
-			}		
-		}
-	}
+    //Sets up platform for levels 1 and 2
+    private void generateCombatLevel () {
+        blocks.clear();
+        for(int i = 0; i<7; i++) {
+            for(int j = 0; j<3; j++) {
+                generateBlock(i*50, j*200);
+            }
+        }
+        for(int k = 1; k<8; k++) {
+            for(int l = 0; l<4; l++) {
+                generateBlock(k*50, l*200-100);
+            }
+        }
+        generateBlock(0,500);
+    }
 
-	private void checkPlayerCollisions () {
-		charOnBlock = false;		
-		for(int i = 0; i<blocks.size(); i++){
-			Rectangle currBlock = blocks.get(i);
-			if(mainCharacter.getSprite().getBoundsInLocal().intersects(currBlock.getBoundsInLocal()) && mainCharacter.getY() + mainCharacter.getSprite().getFitHeight() == currBlock.getY() && mainCharacter.getX() < currBlock.getX() + currBlock.getWidth() && mainCharacter.getX() + mainCharacter.getSprite().getFitWidth() > currBlock.getX()) {
-				charOnBlock = true;
-			}
-			if(mainCharacter.getSprite().getBoundsInLocal().intersects(currBlock.getBoundsInLocal()) && mainCharacter.getY() == currBlock.getY() + currBlock.getHeight() && mainCharacter.getX() < currBlock.getX() + currBlock.getWidth() && mainCharacter.getX() + mainCharacter.getSprite().getFitWidth() > currBlock.getX()) {
-				mainCharacter.setY(currBlock.getY() + currBlock.getHeight());
-				mainCharacter.setYVelocity(0);
-				jumpingUp = false;
-			}
-			if(mainCharacter.getSprite().getBoundsInLocal().intersects(currBlock.getBoundsInLocal()) && mainCharacter.getX() + mainCharacter.getSprite().getFitWidth() == currBlock.getX() && mainCharacter.getY() + mainCharacter.getSprite().getFitHeight() > currBlock.getY() && mainCharacter.getY() < currBlock.getY() + currBlock.getHeight()) {
-				mainCharacter.setXVelocity(0);
-			}
-			if(mainCharacter.getSprite().getBoundsInLocal().intersects(currBlock.getBoundsInLocal()) && mainCharacter.getX() == currBlock.getX() + currBlock.getWidth() && mainCharacter.getY() + mainCharacter.getSprite().getFitHeight() > currBlock.getY() && mainCharacter.getY() < currBlock.getY() + currBlock.getHeight()) {
-				mainCharacter.setXVelocity(0);
-			}
-		}
-		for(int j = 0; j<enemies.size(); j++) {
-			Sprite enemy = enemies.get(j);
-			if(mainCharacter.getSprite().getBoundsInLocal().intersects(enemy.getSprite().getBoundsInLocal())) {
-				playerLoses();
-			}
-		}
-	}
-	
-	private void createExplosion(double xpos, double ypos){
-		explosionSprite = new Image(getClass().getClassLoader().getResourceAsStream("fire_effect.png"));
-		ImageView explosion = new ImageView(explosionSprite);
-		explosion.setX(xpos);
-		explosion.setY(ypos);
-		explosion.setFitHeight(50);
-		explosion.setFitWidth(50);
-		root.getChildren().add(explosion);
-		KeyFrame frame = new KeyFrame(Duration.millis(Main.MILLISECOND_DELAY * 10),
-				e -> root.getChildren().remove(explosion));
-		Timeline animation = new Timeline();
-		animation.getKeyFrames().add(frame);
-		animation.play();
-	}
+    private void generateBossLevel () {
+        currLevel = 3;
+        removeAllSprites();
+        for(int i = 0; i < 8; i++){
+            generateBlock(i * 50, 500);
+        }
+        for(int j = 0; j < 3; j++){
+            generateBlock(0, j * 150+100);
+            generateBlock(350, j * 150+100);
+        }
+        for(int k = 1; k < 3; k++){
+            for(int l = 1; l < 3; l++){
+                generateBlock(130 * k-20, l * 170);
+            }
+        }
+    }
 
-	private void checkEnemyCollisions () {
-		for(int i = 0; i<enemies.size(); i++) {
-			Sprite enemy = enemies.get(i);
-			for(int j = 0; j < projectiles.size(); j++) {
-				Sprite projectile = projectiles.get(j);
-				if(enemy.getSprite().getBoundsInLocal().intersects(projectile.getSprite().getBoundsInLocal())) {
-					KeyFrame frame = new KeyFrame(Duration.millis(Main.MILLISECOND_DELAY),
-							e -> createExplosion(enemy.getX() + enemy.getWidth()/2 - 25, enemy.getY() + enemy.getHeight()/2 - 25));
-					Timeline animation = new Timeline();
-					animation.getKeyFrames().add(frame);
-					animation.play();
-					if(enemy.getHealth() > 1) {
-						enemy.setHealth(enemy.getHealth()-1);
-						root.getChildren().remove(projectile.getSprite());
-						projectiles.remove(projectile);
-					} else { 
-						if(enemy instanceof BossSprite) {
-							playerWins();
-						}
-						root.getChildren().remove(projectile.getSprite());
-						projectiles.remove(projectile);
-						root.getChildren().remove(enemy.getSprite());
-						enemies.remove(enemy);
-					}
-				}
-			}
-		}	
-	}
+    private void spawnWoodySprites(){
+        for(int i  = 0; i < 5; i++) {
+            for(int j = 0; j < 2; j++) {
+                Random rand = new Random();
+                int xPos = rand.nextInt(300);
+                WoodySprite woodySprite = new WoodySprite(xPos + 50, 100*i + 70, 1);
+                if(xPos > Main.WIDTH/2) {
+                    woodySprite.setDirection(1);
+                } else {
+                    woodySprite.setDirection(-1);
+                }
+                enemies.add(woodySprite);
+                addToGameScene(woodySprite.getSprite());
+            }
+        }
+    }
 
-	public void playerWins () {
-		messages.getChildren().clear();
-		Text text = new Text("You've won! Well done!" + System.lineSeparator() + "Press enter to play again.");
-		text.setFont(new Font("Arial Black",15));
-		text.setX(20);
-		text.setY(200);
-		messages.getChildren().add(text);
-		Main.currStage.setScene(finalScene);
-	}
+    private void spawnDragons(){
+        for(int k  = 0; k < 5; k++) {
+            Random rand = new Random();
+            int xPos = rand.nextInt(300);
+            DragonSprite dragonSprite = new DragonSprite(xPos + 100, 100*k + 50, 1);
+            if(xPos > Main.WIDTH/2){
+                dragonSprite.setDirection(1);
+            }else{
+                dragonSprite.setDirection(-1);
+            }
+            enemies.add(dragonSprite);
+            addToGameScene(dragonSprite.getSprite());
+        }	
+    }
 
-	public void playerLoses () {
-		messages.getChildren().clear();
-		Text text = new Text("Game Over. Mamba will never be avenged." + System.lineSeparator() + "Press enter for another chance.");
-		text.setFont(new Font("Arial Black",15));
-		text.setX(20);
-		text.setY(200);
-		messages.getChildren().add(text);
-		Main.currStage.setScene(finalScene);
-	}
+    //Checks if player collides with blocks 
+    private void checkPlayerCollisions () {
+        charOnBlock = false;		
+        for(int i = 0; i < blocks.size(); i++){
+            Rectangle currBlock = blocks.get(i);
+            if(mainCharacter.getSprite().getBoundsInLocal().intersects(currBlock.getBoundsInLocal()) && mainCharacter.getY() + mainCharacter.getSprite().getFitHeight() == currBlock.getY() && mainCharacter.getX() < currBlock.getX() + currBlock.getWidth() && mainCharacter.getX() + mainCharacter.getSprite().getFitWidth() > currBlock.getX()) {
+                charOnBlock = true;
+            }
+            if(mainCharacter.getSprite().getBoundsInLocal().intersects(currBlock.getBoundsInLocal()) && mainCharacter.getY() == currBlock.getY() + currBlock.getHeight() && mainCharacter.getX() < currBlock.getX() + currBlock.getWidth() && mainCharacter.getX() + mainCharacter.getSprite().getFitWidth() > currBlock.getX()) {
+                mainCharacter.setY(currBlock.getY() + currBlock.getHeight());
+                mainCharacter.setYVelocity(0);
+                jumpingUp = false;
+            }
+            if(mainCharacter.getSprite().getBoundsInLocal().intersects(currBlock.getBoundsInLocal()) && mainCharacter.getX() + mainCharacter.getSprite().getFitWidth() == currBlock.getX() && mainCharacter.getY() + mainCharacter.getSprite().getFitHeight() > currBlock.getY() && mainCharacter.getY() < currBlock.getY() + currBlock.getHeight()) {
+                mainCharacter.setXVelocity(0);
+            }
+            if(mainCharacter.getSprite().getBoundsInLocal().intersects(currBlock.getBoundsInLocal()) && mainCharacter.getX() == currBlock.getX() + currBlock.getWidth() && mainCharacter.getY() + mainCharacter.getSprite().getFitHeight() > currBlock.getY() && mainCharacter.getY() < currBlock.getY() + currBlock.getHeight()) {
+                mainCharacter.setXVelocity(0);
+            }
+        }
+    }
 
-	public Scene initializeSplashScreen (int width, int height) {
-		Group menuItems = new Group();
-		splashScene = new Scene(menuItems,width,height,Color.WHITE);
-		ImageView controls = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream("controls.png")));
-		controls.setFitHeight(500);
-		controls.setFitWidth(300);
-		controls.setX(50);
-		controls.setY(25);
-		menuItems.getChildren().add(controls);
-		splashScene.setOnKeyPressed(e -> handleKeyPress(e.getCode()));
-		splashScene.setOnKeyReleased(e-> handleKeyRelease(e.getCode()));
-		initialize();
-		return splashScene;
-	}
+    private void checkPlayerDeath(){
+        for(int j = 0; j < enemies.size(); j++) {
+            Sprite enemy = enemies.get(j);
+            if(mainCharacter.getSprite().getBoundsInLocal().intersects(enemy.getSprite().getBoundsInLocal()) && !invulnerabilityMode) {
+                playerLoses();
+            }
+        }
+        if(currLevel == 3){
+            if(mainCharacter.getSprite().getBoundsInLocal().intersects(bossMissiles.get(0).getBoundsInLocal()) && !invulnerabilityMode){
+                playerLoses();
+            }
+        }
+    }
 
-	public void initialize () {	
-		root = new Group();
-		messages = new Group();
-		bossMissiles = new ArrayList<BossMissile>();
-		blocks = new ArrayList<Rectangle>();
-		enemies = new ArrayList<Sprite>();
-		projectiles = new ArrayList<Fireball>();
-		gameScene = new Scene(root, Main.WIDTH, Main.HEIGHT, Color.WHITE);
-		finalScene = new Scene(messages, Main.WIDTH, Main.HEIGHT, Color.WHITE);
-		blockSprite = new Image(getClass().getClassLoader().getResourceAsStream("block.png"));
+    //Checks if projectile hits enemies
+    private void checkProjectileCollisions () {
+        for(int i = 0; i < enemies.size(); i++) {
+            Sprite enemy = enemies.get(i);
+            for(int j = 0; j < projectiles.size(); j++) {
+                Sprite projectile = projectiles.get(j);
+                if(enemy.getSprite().getBoundsInLocal().intersects(projectile.getSprite().getBoundsInLocal())) {
+                    createExplosionEffect(enemy.getX() + enemy.getWidth()/2 - 25, enemy.getY() + enemy.getHeight()/2 - 25);
+                    if(enemy.getHealth() > 1) {
+                        enemy.setHealth(enemy.getHealth()-1);
+                    } else { 
+                        if(enemy instanceof BossSprite) {
+                            playerWins();
+                        }
+                        removeFromGameScene(enemy.getSprite());
+                        enemies.remove(enemy);
+                    }
+                    removeFromGameScene(projectile.getSprite());
+                    projectiles.remove(projectile);
+                }
+            }
+        }
+    }
 
-		gameScene.setOnKeyPressed(e -> handleKeyPress(e.getCode()));
-		gameScene.setOnKeyReleased(e-> handleKeyRelease(e.getCode()));
-		finalScene.setOnKeyPressed(e -> handleKeyPress(e.getCode()));
-		finalScene.setOnKeyReleased(e-> handleKeyRelease(e.getCode()));
-	}
+    private void fireProjectile(){
+        if(projectiles.size() == 0) {
+            Fireball projectile = new Fireball(mainCharacter.getX() + 10*mainCharacter.getDirection(), mainCharacter.getY(), mainCharacter.getDirection());
+            projectiles.add(projectile);
+            addToGameScene(projectile.getSprite());
+        }
+    }
 
-	public void goNextLevel () {	
-		currLevel++;
-		if(currLevel == 2) {
-			removeAllSprites();
-			generateBlocks();
-			root.getChildren().add(mainCharacter.getSprite());
-			mainCharacter.setX(50);
-			mainCharacter.setY(460);
-			spawnEnemies();
-		} else if(currLevel == 3) {
-			generateBossLevel();
-		}
-	}
+    //Check if projectile moves out of specified range
+    private void checkProjectileDistance(){
+        for(int i = 0; i < projectiles.size(); i++) {
+            Fireball projectile = projectiles.get(i);
+            projectile.move();
+            if(projectile.getX() > projectile.getInitialXPosition() + PROJECTILE_MOVE_DISTANCE || projectile.getX() < projectile.getInitialXPosition() - PROJECTILE_MOVE_DISTANCE || projectile.getX() > Main.WIDTH || projectile.getX() < 0) {
+                removeFromGameScene(projectile.getSprite());
+                projectiles.remove(projectile);
+            }
+        }
+        for(int j = 0; j<bossMissiles.size(); j++) {
+            BossMissile missile = bossMissiles.get(j);
+            missile.move();
+            if(missile.getCenterX() > Main.WIDTH || missile.getCenterX() < 0 || missile.getCenterY() > Main.HEIGHT || missile.getCenterY() < 0) {
+                removeFromGameScene(missile);
+                bossMissiles.remove(missile);
+            }
+        }	
+    }
 
-	public void generateBossLevel () {
-		currLevel = 3;
-		removeAllSprites();
-		for(int i = 0; i<8; i++){
-			Rectangle bottomBlock = new Rectangle(i*50, 500, BLOCK_WIDTH, BLOCK_HEIGHT);
-			bottomBlock.setFill(new ImagePattern(blockSprite));
-			blocks.add(bottomBlock);
-			root.getChildren().add(bottomBlock);
-		}
-		for(int j = 0; j<3; j++){
-			Rectangle leftBlock = new Rectangle(0, j*150+100, BLOCK_WIDTH, BLOCK_HEIGHT);
-			Rectangle rightBlock = new Rectangle(350, j*150+100, BLOCK_WIDTH, BLOCK_HEIGHT);
-			leftBlock.setFill(new ImagePattern(blockSprite));
-			rightBlock.setFill(new ImagePattern(blockSprite));
-			blocks.add(leftBlock);
-			blocks.add(rightBlock);
-			root.getChildren().add(leftBlock);
-			root.getChildren().add(rightBlock);
-		}
+    private void bossShootMissile() {
+        if(bossMissiles.isEmpty()){
+            BossMissile missile = new BossMissile(boss.getX() + boss.getSprite().getFitWidth()/2, boss.getY() + boss.getSprite().getFitHeight()/2, 10, mainCharacter);
+            missile.determineDirection();
+            bossMissiles.add(missile);
+            addToGameScene(missile);
+        }
+    }
 
-		for(int k = 1; k<3; k++){
-			for(int l = 1; l<3; l++){
-				Rectangle centralBlock = new Rectangle(130*k-20,l*170, BLOCK_WIDTH, BLOCK_HEIGHT);
-				centralBlock.setFill(new ImagePattern(blockSprite));
-				blocks.add(centralBlock);
-				root.getChildren().add(centralBlock);
-			}
-		}
-		root.getChildren().add(mainCharacter.getSprite());
-		mainCharacter.setX(0);
-		mainCharacter.setY(460);
-		boss = new BossSprite(100,50,1);
-		root.getChildren().add(boss.getSprite());
-		enemies.add(boss);
-	}
+    private void createExplosionEffect(double xpos, double ypos){
+        explosionSprite = new Image(getClass().getClassLoader().getResourceAsStream("fire_effect.png"));
+        ImageView explosion = new ImageView(explosionSprite);
+        explosion.setX(xpos);
+        explosion.setY(ypos);
+        explosion.setFitHeight(50);
+        explosion.setFitWidth(50);
+        addToGameScene(explosion);
+        KeyFrame frame = new KeyFrame(Duration.millis(Main.MILLISECOND_DELAY * 10),
+                                      e -> removeFromGameScene(explosion));
+        Timeline animation = new Timeline();
+        animation.getKeyFrames().add(frame);
+        animation.play();
+    }
 
-	public void step (double elapsedTime) {
-		if(Main.currStage.getScene() == gameScene){
-			if(mainCharacter.getY() < 0){
-				goNextLevel();
-			}
-			mainCharacter.checkBounds();
+    private void playerWins () {
+        messages.getChildren().clear();
+        Text text = new Text("You've won! Well done!" + System.lineSeparator() + "Press enter to play again.");
+        text.setFont(new Font("Arial Black",15));
+        text.setX(20);
+        text.setY(200);
+        messages.getChildren().add(text);
+        Main.getCurrStage().setScene(finalScene);
+    }
 
-			for(int i = 0; i < projectiles.size(); i++) {
-				Fireball projectile = projectiles.get(i);
-				projectile.move();
-				if(projectile.getX() > projectile.getInitialXPosition() + PROJECTILE_MOVE_DISTANCE || projectile.getX() < projectile.getInitialXPosition() - PROJECTILE_MOVE_DISTANCE || projectile.getX() > Main.WIDTH || projectile.getX() < 0) {
-					root.getChildren().remove(projectile.getSprite());
-					projectiles.remove(projectile);
-				}
-			}
-			if(currLevel == 3) {
-				bossAttack();
-				for(int j = 0; j<bossMissiles.size(); j++) {
-					BossMissile missile = bossMissiles.get(j);
-					missile.move();
-					if(missile.getBoundsInLocal().intersects(mainCharacter.getSprite().getBoundsInLocal())) {
-						playerLoses();
-					}
-					if(missile.getCenterX() > Main.WIDTH || missile.getCenterX() < 0 || missile.getCenterY() > Main.HEIGHT || missile.getCenterY() < 0) {
-						root.getChildren().remove(missile);
-						bossMissiles.remove(missile);
-					}
-				}		
-			}
-			for(Sprite enemy:enemies) {
-				enemy.move();
-			}
+    private void playerLoses () {
+        messages.getChildren().clear();
+        Text text = new Text("Game Over. Mamba will never be avenged." + System.lineSeparator() + "Press enter for another chance.");
+        text.setFont(new Font("Arial Black",15));
+        text.setX(20);
+        text.setY(200);
+        messages.getChildren().add(text);
+        Main.getCurrStage().setScene(finalScene);
+    }
 
-			if(jumpingUp && mainCharacter.getY() > initialJumpingPosition-120) {
-				mainCharacter.setYVelocity(-JUMP_SPEED);
-			} else {
-				jumpingUp = false;
-				mainCharacter.setYVelocity(0);
-			}
+    private void spawnBoss(){
+        addToGameScene(mainCharacter.getSprite());
+        mainCharacter.setX(0);
+        mainCharacter.setY(460);
+        boss = new BossSprite(100,50,1);
+        addToGameScene(boss.getSprite());
+        enemies.add(boss);
+    }
 
-			mainCharacter.setX(mainCharacter.getX() + mainCharacter.getXVelocity() * mainCharacter.getDirection());
+    private void levelUp () {	
+        currLevel++;
+        if(currLevel == 2) {
+            removeAllSprites();
+            generateCombatLevel();
+            addToGameScene(mainCharacter.getSprite());
+            mainCharacter.setX(0);
+            mainCharacter.setY(460);
+            spawnDragons();
+        } else if(currLevel == 3) {
+            generateBossLevel();
+            spawnBoss();
+        }
+    }
 
-			checkPlayerCollisions();
-			checkEnemyCollisions();
-			if(!charOnBlock && !jumpingUp){
-				mainCharacter.setYVelocity(GRAVITY);
-			}
-			mainCharacter.setY(mainCharacter.getY() + mainCharacter.getYVelocity());
-		}
-	}
+    private void jumpIfKeyPressed(){
+        if(jumpingUp && mainCharacter.getY() > initialJumpingPosition - 120) {
+            mainCharacter.setYVelocity(-JUMP_SPEED);
+        } else {
+            jumpingUp = false;
+            mainCharacter.setYVelocity(0);
+        }
+    }
 
-	private void handleKeyPress (KeyCode code) {
-		switch (code) {
-		case W:
-			if(charOnBlock && Main.currStage.getScene() == gameScene) {
-				jumpingUp = true;
-				initialJumpingPosition = mainCharacter.getY();
-			}
-			break;
-		case A:
-			if(Main.currStage.getScene() == gameScene) {
-			mainCharacter.setDirection(-1);
-			mainCharacter.setXVelocity(MOVE_SPEED);
-			checkPlayerCollisions();
-			}
-			break;
-		case D:
-			if(Main.currStage.getScene() == gameScene) {
-			mainCharacter.setDirection(1);
-			mainCharacter.setXVelocity(MOVE_SPEED);
-			checkPlayerCollisions();
-			}
-			break;
-		case SPACE:
-			if(projectiles.size() == 0 && Main.currStage.getScene() == gameScene) {
-				Fireball projectile = new Fireball(mainCharacter.getX() + 10*mainCharacter.getDirection(), mainCharacter.getY(), mainCharacter.getDirection());
-				projectiles.add(projectile);
-				root.getChildren().add(projectile.getSprite());
-			}
-			break;
-		case ENTER:
-			if(Main.currStage.getScene() == splashScene) {
-				startGame();
-				Main.currStage.setScene(gameScene);
-			}else if(Main.currStage.getScene() == finalScene) {
-				reset();
-				Main.currStage.setScene(splashScene);
-			}
-			break;
-		case M:
-			if(Main.currStage.getScene() == gameScene) {
-				reset();
-				Main.currStage.setScene(splashScene);
-			}
-			break;
-		case N:
-			if(currLevel < 3 && Main.currStage.getScene() == gameScene) {
-				goNextLevel();
-			}
-			break;
-		case B:
-			if(Main.currStage.getScene() == gameScene) {
-				generateBossLevel();
-			}
-			break;
-		default:
-			break;
-		}
-	}
+    //Instantiates objects/data structures
+    private void initialize () {	
+        root = new Group();
+        messages = new Group();
+        bossMissiles = new ArrayList<BossMissile>();
+        blocks = new ArrayList<Rectangle>();
+        enemies = new ArrayList<Sprite>();
+        projectiles = new ArrayList<Fireball>();
+        gameScene = new Scene(root, Main.WIDTH, Main.HEIGHT, Color.WHITE);
+        finalScene = new Scene(messages, Main.WIDTH, Main.HEIGHT, Color.WHITE);
+        blockSprite = new Image(getClass().getClassLoader().getResourceAsStream("block.png"));
+        stonePattern = new ImagePattern(blockSprite);
+        gameScene.setOnKeyPressed(e -> handleInGameKeyPress(e.getCode()));
+        gameScene.setOnKeyReleased(e-> handleKeyRelease(e.getCode()));
+        finalScene.setOnKeyPressed(e -> handleMenuKeyPress(e.getCode()));
+    }
 
-	private void handleKeyRelease (KeyCode code) {
-		switch (code) {
-		case W:
-			break;
-		case A:
-			if(mainCharacter.getDirection() == -1) {
-				mainCharacter.setXVelocity(0);
-			}
-			break;
-		case D:
-			if(mainCharacter.getDirection() == 1) {
-				mainCharacter.setXVelocity(0);
-			}
-			break;
-		default:
-			break;
-		}
-	}
+    //Begins level 1
+    private void startGame () {
+        generateCombatLevel();
+        mainCharacter = new Sprite(0, 460, 1);
+        addToGameScene(mainCharacter.getSprite());
+        spawnWoodySprites();
+    }
 
-	public void removeAllSprites() {
-		root.getChildren().clear();
-		enemies.clear();
-		projectiles.clear();
-		blocks.clear();
-		bossMissiles.clear();
-	}
+    private void addToGameScene(Node node){
+        root.getChildren().add(node);
+    }
 
-	public void reset() {
-		removeAllSprites();
-		currLevel = 1;
-	}
+    private void removeFromGameScene(Object object){
+        root.getChildren().remove(object);
+    }
 
-	public void bossAttack() {
-		if(bossMissiles.isEmpty()){
-			BossMissile missile = new BossMissile(boss.getX() + boss.getSprite().getFitWidth()/2, boss.getY() + boss.getSprite().getFitHeight()/2, 10, mainCharacter);
-			missile.determineDirection();
-			bossMissiles.add(missile);
-			root.getChildren().add(missile);
-		}
-	}
+    private void removeAllSprites() {
+        root.getChildren().clear();
+        enemies.clear();
+        projectiles.clear();
+        blocks.clear();
+        bossMissiles.clear();
+    }
 
-	public String getTitle() {
-		return TITLE;
-	}
+    private void reset() {
+        invulnerabilityMode = false;
+        removeAllSprites();
+        currLevel = 1;
+    }
+
+    /**
+     * Sets up the splash screen at the beginning of the game
+     * showing player controls
+     * @param width The width of the splash screen
+     * @param height The height of the splash screen
+     * @return An instance of the splash screen
+     */
+    public Scene initializeSplashScreen (int width, int height) {
+        Group menuItems = new Group();
+        splashScene = new Scene(menuItems,width,height,Color.WHITE);
+        ImageView controls = new ImageView(new Image(getClass().getClassLoader().getResourceAsStream("controls.png")));
+        controls.setFitHeight(500);
+        controls.setFitWidth(300);
+        controls.setX(50);
+        controls.setY(25);
+        menuItems.getChildren().add(controls);
+        splashScene.setOnKeyPressed(e -> handleMenuKeyPress(e.getCode()));
+        initialize();
+        return splashScene;
+    }
+
+    /**
+     * Runs continuously throughout the program and checks
+     * levels, keys, movement, and collisions
+     */
+    public void step () {
+        if(Main.getCurrStage().getScene() == gameScene){
+            if(mainCharacter.getY() < 0){
+                levelUp();
+            }
+            mainCharacter.checkBounds();
+            checkProjectileDistance();
+            for(Sprite enemy:enemies) {
+                enemy.move();
+            }
+            if(currLevel == 3) {
+                bossShootMissile();	
+            }
+            jumpIfKeyPressed();
+            checkPlayerDeath();
+            checkPlayerCollisions();
+            checkProjectileCollisions();
+            if(!charOnBlock && !jumpingUp){
+                mainCharacter.setYVelocity(GRAVITY);
+            }
+            mainCharacter.move();
+        }
+    }
+
+    private void handleMenuKeyPress (KeyCode code) {
+        if(code == KeyCode.ENTER){
+            if(Main.getCurrStage().getScene() == splashScene) {
+                startGame();
+                Main.getCurrStage().setScene(gameScene);
+            } else {
+                reset();
+                Main.getCurrStage().setScene(splashScene);
+            }
+        }
+    }
+
+    private void handleInGameKeyPress (KeyCode code) {
+        switch (code) {
+            case W:
+                if(charOnBlock){
+                    jumpingUp = true;
+                    initialJumpingPosition = mainCharacter.getY();
+                }
+                break;
+            case A:
+                mainCharacter.setDirection(-1);
+                mainCharacter.setXVelocity(MOVE_SPEED);
+                checkPlayerCollisions();
+                break;
+            case D:
+                mainCharacter.setDirection(1);
+                mainCharacter.setXVelocity(MOVE_SPEED);
+                checkPlayerCollisions();
+                break;
+            case SPACE:
+                fireProjectile();
+                break;
+            case M:
+                reset();
+                Main.getCurrStage().setScene(splashScene);
+                break;
+            case N:
+                if(currLevel < 3) {
+                    levelUp();
+                }
+                break;
+            case B:
+                generateBossLevel();
+                spawnBoss();
+                break;
+            case I:
+                invulnerabilityMode = true;
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void handleKeyRelease (KeyCode code) {
+        switch (code) {
+            case W:
+                break;
+            case A:
+                if(mainCharacter.getDirection() == -1) {
+                    mainCharacter.setXVelocity(0);
+                }
+                break;
+            case D:
+                if(mainCharacter.getDirection() == 1) {
+                    mainCharacter.setXVelocity(0);
+                }
+                break;
+            default:
+                break;
+        }
+    }
 }

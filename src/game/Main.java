@@ -7,40 +7,65 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+/**
+ * 
+ * @author Soravit Sophastienphong, credit to Robert C. Duvall for template code
+ *
+ */
 public class Main extends Application {
-	public static Stage currStage;
-	public static final int WIDTH = 400;
-	public static final int HEIGHT = 550;
-	public static final int FRAMES_PER_SECOND = 60;
-	public static final int MILLISECOND_DELAY = 1000 / FRAMES_PER_SECOND;
-	private static final double SECOND_DELAY = 1.0 / FRAMES_PER_SECOND;
+    private static Stage currStage;
+    public static final int WIDTH = 400;
+    public static final int HEIGHT = 550;
+    public static final int FRAMES_PER_SECOND = 60;
+    public static final int MILLISECOND_DELAY = 1000 / FRAMES_PER_SECOND;
+    private static final double SECOND_DELAY = 1.0 / FRAMES_PER_SECOND;
 
-	private GameFrame Game;
+    private GameFrame Game;
 
-	@Override
-	public void start (Stage startStage) throws Exception {
-		// TODO Auto-generated method stub
-		
-		currStage = startStage;
-		Game = new GameFrame();
-		startStage.setTitle(Game.getTitle());
-		startStage.setResizable(false);
-		startStage.sizeToScene();
-		Scene startScene = Game.initializeSplashScreen(WIDTH, HEIGHT);
-		startStage.setScene(startScene);
-		startStage.show();
+    /**
+     * Sets up the stage, scene, and graphics for the game
+     * 
+     * @param The stage that the game is played on
+     */
+    @Override
+    public void start (Stage startStage) throws Exception {
+        // TODO Auto-generated method stub
+        setCurrStage(startStage);
+        Game = new GameFrame();
+        startStage.setTitle(Game.getTitle());
+        startStage.setResizable(false);
+        startStage.sizeToScene();
+        Scene startScene = Game.initializeSplashScreen(WIDTH, HEIGHT);
+        startStage.setScene(startScene);
+        startStage.show();
 
-		KeyFrame frame = new KeyFrame(Duration.millis(MILLISECOND_DELAY),
-				e -> Game.step(SECOND_DELAY));
-		Timeline animation = new Timeline();
-		animation.setCycleCount(Timeline.INDEFINITE);
-		animation.getKeyFrames().add(frame);
-		animation.play();
-	}
+        KeyFrame frame = new KeyFrame(Duration.millis(MILLISECOND_DELAY),
+                                      e -> Game.step());
+        Timeline animation = new Timeline();
+        animation.setCycleCount(Timeline.INDEFINITE);
+        animation.getKeyFrames().add(frame);
+        animation.play();
+    }
 
-	public static void main (String[] args) {
-		// TODO Auto-generated method stub
-		launch(args);
-	}
+    /**
+     * This is the main method
+     */
+    public static void main (String[] args) {
+        // TODO Auto-generated method stub
+        launch(args);
+    }
 
+    /**
+     * Returns the stage
+     */
+    public static Stage getCurrStage () {
+        return currStage;
+    }
+
+    /**
+     * Sets the stage
+     */
+    public static void setCurrStage (Stage currStage) {
+        Main.currStage = currStage;
+    }
 }
