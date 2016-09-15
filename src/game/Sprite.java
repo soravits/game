@@ -1,3 +1,6 @@
+// This entire file is part of my masterpiece.
+// Soravit Sophastienphong
+
 package game;
 
 import javafx.scene.image.Image;
@@ -6,7 +9,9 @@ import javafx.scene.image.ImageView;
 /** 
  * This is the superclass from which all sprites in the game inherit. It
  * contains many initial values and their respective getters
- * and setters. It also defines a default method for movement.
+ * and setters. It also defines default methods for movement and window
+ * boundaries. It uses the ImageView and Image classes but does not
+ * inherit from them.
  * 
  * @author Soravit Sophastienphong
  */
@@ -16,18 +21,11 @@ public class Sprite {
     protected ImageView sprite;
     protected Image facingRight;
     protected Image facingLeft;
-
-    private int direction = 1;
+    
     private double velocityX = 0;
     private double velocityY = 0;
+    private int direction = 1;
     private int health = 1;
-
-    /**
-     * The default constructor
-     */
-    public Sprite(){
-        this(460,0,1);
-    }
 
     /**
      * The constructor that sets the initial values for the sprite
@@ -38,7 +36,7 @@ public class Sprite {
     public Sprite (double xpos, double ypos, int direction) {
         facingRight = new Image(getClass().getClassLoader().getResourceAsStream("SpriteFacingRight.png"));
         facingLeft = new Image(getClass().getClassLoader().getResourceAsStream("SpriteFacingLeft.png"));
-        sprite = new ImageView(facingRight);
+        sprite = new ImageView();
         if(direction == 1) {
             sprite.setImage(facingLeft);
         } else {
